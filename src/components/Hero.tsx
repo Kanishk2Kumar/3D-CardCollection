@@ -73,10 +73,10 @@ const Hero: FC = () => {
             <p className="mb-5 max-w-lg text-blue-100 font-medium text-lg">
             Sleek and timeless, the Porsche 911<br/> embodies unparalleled performance.
             </p>
-            <a href="https://www.youtube.com/watch?v=x1_-btXPWpc" target="_blank" rel="noopener noreferrer">
+            <a href="/Market-Place" target="_blank" rel="noopener noreferrer">
               <Button
                 id="watch-trailer"
-                title="Watch trailer"
+                title="Visit MarketPlace"
                 leftIcon={<TiLocationArrow />}
                 containerClass="bg-red-800 flex-center gap-1"
               />

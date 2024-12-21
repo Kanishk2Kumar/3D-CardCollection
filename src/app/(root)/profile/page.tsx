@@ -12,12 +12,9 @@ import Image from "next/image";
 
 import { client } from "../../client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { openPack } from "thirdweb/extensions/pack";
 import { useActiveAccount } from "thirdweb/react";
-
-// Import the model-viewer web component
-import "@google/model-viewer";
 
 // Define a type for the NFT metadata structure
 type NFT = {
@@ -38,7 +35,6 @@ export default function Profile() {
   const [nfts, setNfts] = useState<any[]>([]);
   const [packs, setPacks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
   const [activeTab, setActiveTab] = useState("NFTs");
 
   const walletInfo = useActiveWallet();
@@ -93,15 +89,8 @@ export default function Profile() {
     );
   };
 
-  const handleCardClick = (nft: NFT) => {
-    setSelectedNft(nft);
-  };
-
-  const handleClose = () => {
-    setSelectedNft(null);
-  };
-
   const openNewPack = async (packId: number) => {
+  try {
     const transaction = await openPack({
       contract: packsContract,
       packId: BigInt(packId),
@@ -118,25 +107,16 @@ export default function Profile() {
       transaction,
       account: account,
     });
-  };
+
+    alert("Pack opened successfully!");
+  } catch (error) {
+    console.error("Error opening pack:", error);
+    alert(`Failed to open pack.Error: ${error}`);
+  }
+};
+
 
   const renderMedia = (url: string, alt: string) => {
-    if (url.endsWith(".glb") || url.endsWith(".gltf")) {
-      return (
-        <model-viewer
-          src={formatIpfsUrl(url)}
-          alt={alt}
-          auto-rotate
-          camera-controls
-          className="w-full h-full object-cover rounded-lg shadow-lg"
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "block",
-          }}
-        ></model-viewer>
-      );
-    }
     return (
       <Image
         src={formatIpfsUrl(url)}
@@ -152,7 +132,7 @@ export default function Profile() {
     <div className="min-h-screen bg-black text-white p-16 pb-40 pt-20">
       <div className="flex flex-col items-center">
         <h1 className="special-font hero-heading text-red-800 mb-6 !text-6xl">
-          3D Car NFT Marketplace
+          NFT Marketplace
         </h1>
 
         <div className="flex space-x-4 mb-8">
@@ -190,7 +170,11 @@ export default function Profile() {
                 <motion.div
                   className="border-t-4 border-red-500 rounded-full w-16 h-16"
                   animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1,
+                    ease: "linear",
+                  }}
                 />
               </motion.div>
               <h1 className="text-3xl font-bold text-center font-medieval">
@@ -203,13 +187,22 @@ export default function Profile() {
                 <motion.div
                   key={index}
                   className="bg-transparent rounded-lg shadow-md overflow-hidden flex flex-col w-72 h-[400px] cursor-pointer"
-                  onClick={() => handleCardClick(nft)}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
+                  {" "}
                   <div className="relative h-80 w-full">
-                    {renderMedia(nft.metadata.image, nft.metadata.name)}
-                  </div>
+                    {" "}
+                    {renderMedia(nft.metadata.image, nft.metadata.name)}{" "}
+                  </div>{" "}
+                  <h2 className="text-xl mt-2">{nft.metadata.name}</h2>{" "}
+                  <button
+                    onClick={() => openNewPack(nft.metadata.id)}
+                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md"
+                  >
+                    {" "}
+                    Open Pack{" "}
+                  </button>{" "}
                 </motion.div>
               ))}
             </div>
@@ -219,22 +212,28 @@ export default function Profile() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
             {packs.map((pack, index) => (
               <motion.div
-              key={index}
-              className="bg-black border border-red-600 rounded-lg shadow-lg flex flex-col p-4"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <div className="relative mb-10">
-                {renderMedia(pack.metadata.image, pack.metadata.name)}
-              </div>
-              <div className="max-w-64">
-              <p className="text-md mb-6 overflow-hidden text-ellipsis"
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                {pack.metadata.description}
-              </p>
-              </div>
-              <h2 className="text-xl mt-2">{pack.metadata.name}</h2>
-            </motion.div>            
+                key={index}
+                className="bg-black border border-red-600 rounded-lg shadow-lg flex flex-col p-4"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <div className="relative mb-10">
+                  {renderMedia(pack.metadata.image, pack.metadata.name)}
+                </div>
+                <div className="max-w-64">
+                  <p
+                    className="text-md mb-6 overflow-hidden text-ellipsis"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {pack.metadata.description}
+                  </p>
+                </div>
+                <h2 className="text-xl mt-2">{pack.metadata.name}</h2>
+              </motion.div>
             ))}
           </div>
         )}
