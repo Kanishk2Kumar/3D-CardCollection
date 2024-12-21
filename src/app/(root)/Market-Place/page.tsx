@@ -1,59 +1,91 @@
 "use client";
-import React, { useState } from "react";
-import { PinContainer } from "@/components/ui/3d-pin";
 
-const Marketplace = () => {
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion"; // Import framer-motion
+import { useActiveWallet } from "thirdweb/react";
+import { getAllValidListings } from "thirdweb/extensions/marketplace";
+import { useActiveAccount } from "thirdweb/react";
+import { defineChain, getContract, sendTransaction } from "thirdweb";
+import { client } from "../../client";
+import { MARKET_CONTRACT_ADDRESS } from "../../../const/addresses";
+import { PinContainer } from "@/components/ui/3d-pin";
+import { buyFromListing } from "thirdweb/extensions/marketplace";
+
+type Listing = {
+  asset: {
+    metadata: {
+      name: string;
+      image: string;
+      description: string;
+    };
+    supply: bigint;
+  };
+  currencyValuePerToken: {
+    displayValue: string;
+  };
+};
+
+export default function Shop() {
+  const [listings, setListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("price-asc");
 
-  const nftData = [
-    {
-      id: 1,
-      title: "BMW-M5",
-      description: "Sleek and timeless, unparalleled performance.",
-      price: 10,
-      image: "./images/BMW-M5.png",
-    },
-    {
-      id: 2,
-      title: "Lamborghini Aventador",
-      description: "Exudes raw power with stunning aerodynamics.",
-      price: 15,
-      image: "/images/Lamborghini.png",
-    },
-    {
-      id: 3,
-      title: "Porsche 911 (930)",
-      description: "The legendary Porsche 911 (930) - a true classic of its era.",
-      price: 12,
-      image: "/images/Porche911(930).png",
-    },
-    {
-      id: 4,
-      title: "Porsche 911",
-      description: "A hybrid marvel, redefining speed and sophistication.",
-      price: 18,
-      image: "/images/Porche911.png",
-    },
-    {
-      id: 5,
-      title: "McLaren",
-      description: "The ultimate blend of precision and performance.",
-      price: 20,
-      image: "/images/MCLaren.png",
-    },
-  ];
+  const walletInfo = useActiveWallet();
+  const account = useActiveAccount();
+  const chain = defineChain(walletInfo?.getChain()?.id ?? 11155111);
 
-  const filteredNFTs = nftData
-    .filter((nft) =>
-      nft.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortOption === "price-asc") return a.price - b.price;
-      if (sortOption === "price-desc") return b.price - a.price;
-      if (sortOption === "alphabetical") return a.title.localeCompare(b.title);
-      return 0;
+  const market = getContract({
+    address: MARKET_CONTRACT_ADDRESS,
+    chain,
+    client,
+  });
+
+  useEffect(() => {
+    const fetchValidListings = async () => {
+      try {
+        const lists = await getAllValidListings({
+          contract: market,
+          start: 0,
+          count: BigInt(10),
+        });
+        setListings(lists);
+      } catch (error) {
+        console.error("Error fetching valid listings:", error);
+      } finally {
+        setIsLoading(false); // Set loading to false once data is fetched
+      }
+    };
+
+    fetchValidListings();
+  }, [market]);
+
+  const formatIpfsUrl = (url: string) => {
+    return url.replace(
+      "ipfs://",
+      "https://d9e571038d3183668c5882bbc75bc9ae.ipfscdn.io/ipfs/"
+    );
+  };
+
+  const buyNFtT = async (listingId: number) => {
+    const transaction = await buyFromListing({
+      contract: market,
+      listingId: BigInt(listingId),
+      quantity: 1n,
+      recipient: account?.address || "",
     });
+
+    if (!account) {
+      console.error("Account not found");
+      return;
+    }
+
+    await sendTransaction({
+      transaction,
+      account: account,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-16 pb-40 pt-20">
@@ -79,38 +111,94 @@ const Marketplace = () => {
             <option value="alphabetical">Sort by: Alphabetical</option>
           </select>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 w-full max-w-6xl px-4 mt-16">
-          {filteredNFTs.map((nft) => (
-            <PinContainer
-            key={nft.id}
-            title={nft.title}
-            className="w-[300px] h-[400px] p-6 bg-black text-white mt-10"
-          >
-            <div
-              key={nft.id}
-              className="relative w-full rounded-lg overflow-hidden shadow-md transform hover:scale-105 transition duration-300"
+
+        {isLoading ? (
+          <div>
+            <motion.div
+              className="flex justify-center items-center h-64"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.5,
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
             >
-              <div
-                className="bg-cover bg-center h-40"
-                style={{ backgroundImage: `url(${nft.image})` }}
+              <motion.div
+                className="border-t-4 border-blue-500 rounded-full w-16 h-16"
+                animate={{
+                  rotate: 360,
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 1,
+                  ease: "linear",
+                }}
               />
-              <div className="p-4 flex flex-col space-y-2">
-                <h2 className="text-xl font-bold text-white">{nft.title}</h2>
-                <p className="text-sm text-gray-300">{nft.description}</p>
-                <p className="text-lg font-semibold text-white">
-                  ${nft.price}
-                </p>
-              </div>
-              <button className="absolute bottom-4 right-4 px-4 py-2 text-sm font-bold bg-gray-700 text-white rounded hover:bg-gray-600">
-                Buy Now
-              </button>
-            </div>
-          </PinContainer>          
-          ))}
-        </div>
+            </motion.div>
+            <h1 className="text-3xl font-bold mb-8 text-center font-medieval">
+              Loading Lists ...
+            </h1>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-20">
+            {listings.map((listing, index) => (
+              <PinContainer
+                key={index}
+                title={listing.asset.metadata.name}
+                className="w-[300px] h-[400px] p-6 bg-black text-white"
+              >
+                <motion.div
+                  className="relative w-full rounded-lg overflow-hidden shadow-md transform hover:scale-105 transition duration-300"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  {/* Image Section */}
+                  <div
+                    className="bg-cover bg-center h-40"
+                    style={{
+                      backgroundImage: `url(${formatIpfsUrl(
+                        listing.asset.metadata.image
+                      )})`,
+                    }}
+                  />
+
+                  {/* Content Section */}
+                  <div className="p-4 flex flex-col space-y-2 relative">
+                    <h2 className="text-xl font-bold text-white">
+                      {listing.asset.metadata.name}
+                    </h2>
+                    <p className="text-sm text-gray-300 h-10 overflow-y-auto">
+                      {listing.asset.metadata.description}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700">
+                        Amount left: {listing.quantity.toString()}
+                      </span>
+                      <span className="font-bold text-green-600">
+                        {listing.currencyValuePerToken.displayValue} ETH
+                      </span>
+                    </div>
+                    {/* Buy Now Button */}
+                    {!account ? (
+                      <p className="text-red-500 text-sm mt-2">
+                        Please Connect Wallet
+                      </p>
+                    ) : (
+                      <button
+                        onClick={buyNFtT.bind(null, listing.id)}
+                        className="mt-4 py-2 text-sm font-bold bg-gray-700 text-white rounded hover:bg-gray-600 w-full"
+                      >
+                        Buy Now
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              </PinContainer>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-export default Marketplace;
+}
