@@ -16,6 +16,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { openPack } from "thirdweb/extensions/pack";
 import { useActiveAccount } from "thirdweb/react";
 
+// Import the model-viewer web component
+import "@google/model-viewer";
+
 // Define a type for the NFT metadata structure
 type NFT = {
   metadata: {
@@ -123,10 +126,14 @@ export default function Profile() {
         <model-viewer
           src={formatIpfsUrl(url)}
           alt={alt}
-          className="w-full h-full object-cover rounded-lg shadow-lg"
           auto-rotate
           camera-controls
-          style={{ width: "100%", height: "100%" }}
+          className="w-full h-full object-cover rounded-lg shadow-lg"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "block",
+          }}
         ></model-viewer>
       );
     }
@@ -150,9 +157,9 @@ export default function Profile() {
 
         <div className="flex space-x-4 mb-8">
           <button
-            onClick={() => setActiveTab("NFTs")}
+            onClick={() => setActiveTab("Packs")}
             className={`px-4 py-2 rounded-lg font-medieval ${
-              activeTab === "NFTs"
+              activeTab === "Packs"
                 ? "bg-red-500 text-white"
                 : "bg-gray-200 text-gray-800"
             }`}
@@ -160,9 +167,9 @@ export default function Profile() {
             NFTs
           </button>
           <button
-            onClick={() => setActiveTab("Packs")}
+            onClick={() => setActiveTab("NFTs")}
             className={`px-4 py-2 rounded-lg font-medieval ${
-              activeTab === "Packs"
+              activeTab === "NFTs"
                 ? "bg-red-500 text-white"
                 : "bg-gray-200 text-gray-800"
             }`}
@@ -173,16 +180,12 @@ export default function Profile() {
 
         {activeTab === "NFTs" &&
           (isLoading ? (
-            <div>
+            <div className="text-center">
               <motion.div
                 className="flex justify-center items-center h-64"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.5,
-                  ease: "easeInOut",
-                  repeat: Infinity,
-                }}
+                transition={{ duration: 0.5 }}
               >
                 <motion.div
                   className="border-t-4 border-red-500 rounded-full w-16 h-16"
@@ -190,8 +193,8 @@ export default function Profile() {
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                 />
               </motion.div>
-              <h1 className="text-3xl font-bold mb-8 text-center font-medieval">
-                Loading Lists ...
+              <h1 className="text-3xl font-bold text-center font-medieval">
+                Loading Lists...
               </h1>
             </div>
           ) : (
@@ -213,107 +216,28 @@ export default function Profile() {
           ))}
 
         {activeTab === "Packs" && (
-          <div className="w-full flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl px-4">
-              {packs.map((pack, index) => (
-                <motion.div
-                  key={index}
-                  className="bg-black border border-red-600 rounded-lg shadow-lg overflow-hidden flex flex-col h-full w-full"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <div className="relative h-80 w-full">
-                    {renderMedia(pack.metadata.image, pack.metadata.name)}
-                  </div>
-                  <div className="p-4 flex-grow flex flex-col justify-between">
-                    <h2 className="text-xl font-medieval mb-2 text-white">
-                      {pack.metadata.name}
-                    </h2>
-                    <p className="text-gray-400 text-sm mb-4 h-10 overflow-y-auto font-medieval">
-                      {pack.metadata.description}
-                    </p>
-                    <div className="flex justify-between items-center text-gray-300 mb-4">
-                      <span className="font-medieval">
-                        Amount Owned: <b className="text-white">{pack.quantityOwned.toString()}</b> /{" "}
-                        <b className="text-white">{pack.supply.toString()}</b>
-                      </span>
-                    </div>
-                    <button
-                      onClick={openNewPack.bind(null, pack.id)}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 font-medieval"
-                    >
-                      Open Pack
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
+            {packs.map((pack, index) => (
+              <motion.div
+              key={index}
+              className="bg-black border border-red-600 rounded-lg shadow-lg flex flex-col p-4"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <div className="relative mb-10">
+                {renderMedia(pack.metadata.image, pack.metadata.name)}
+              </div>
+              <div className="max-w-64">
+              <p className="text-md mb-6 overflow-hidden text-ellipsis"
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {pack.metadata.description}
+              </p>
+              </div>
+              <h2 className="text-xl mt-2">{pack.metadata.name}</h2>
+            </motion.div>            
+            ))}
           </div>
         )}
-
-        <AnimatePresence>
-          {selectedNft && (
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-lg shadow-2xl p-8 w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] max-w-4xl relative"
-                initial={{ scale: 0.9, y: 50 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 50 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <button
-                  onClick={handleClose}
-                  className="absolute top-4 right-4 text-white hover:text-gray-300 font-bold text-2xl"
-                >
-                  ✕
-                </button>
-                <div className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-8">
-                  <div className="relative w-64 h-64 md:w-80 md:h-80 flex-shrink-0">
-                    {renderMedia(selectedNft.metadata.image, selectedNft.metadata.name)}
-                  </div>
-                  <div className="flex-grow text-white font-medieval">
-                    <h2 className="text-4xl font-bold mb-4">
-                      {selectedNft.metadata.name}
-                    </h2>
-
-                    <div className="mb-6">
-                      <h3 className="text-2xl font-semibold mb-2">
-                        Attributes:
-                      </h3>
-                      <ul className="grid grid-cols-2 gap-4">
-                        {selectedNft.metadata.attributes.map(
-                          (attribute, index) => (
-                            <li
-                              key={index}
-                              className="bg-white bg-opacity-10 rounded-md p-3"
-                            >
-                              <span className="font-bold">
-                                {attribute.trait_type}:
-                              </span>{" "}
-                              {attribute.value}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                    <p className="text-2xl">
-                      Owned: {selectedNft.quantityOwned.toString()} /{" "}
-                      {selectedNft.supply.toString()}
-                    </p>
-                    <p className="text-xl mb-6">
-                      {selectedNft.metadata.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
