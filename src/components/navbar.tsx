@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { TiLocationArrow } from "react-icons/ti";
-import Button from "./Button";
 import clsx from "clsx";
 import { useWindowScroll } from "react-use";
 import gsap from "gsap";
@@ -39,7 +37,7 @@ const wallets = [
   createWallet("io.zerion.wallet"),
 ];
 
-const navItems = ["Home", "P-2-P", "VS-AI ","Market-Place"];
+const navItems = ["Home", "P-2-P", "VS-AI ","Market-Place", "profile"];
 
 const Navbar: React.FC = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
@@ -88,7 +86,7 @@ const Navbar: React.FC = () => {
     }
   }, [isAudioPlaying]);
   const WalletInfo = useActiveWallet();
-  
+
   return (
     <div
       ref={navContainerRef}
