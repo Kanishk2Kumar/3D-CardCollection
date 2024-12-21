@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { useWindowScroll } from "react-use";
 import gsap from "gsap";
 import { createThirdwebClient } from "thirdweb";
-import { ConnectButton } from "thirdweb/react";
+import { ConnectButton, useActiveWallet } from "thirdweb/react";
 import { darkTheme } from "thirdweb/react";
 import {
   inAppWallet,
@@ -87,7 +87,8 @@ const Navbar: React.FC = () => {
       audioElementRef.current?.pause();
     }
   }, [isAudioPlaying]);
-
+  const WalletInfo = useActiveWallet();
+  
   return (
     <div
       ref={navContainerRef}
