@@ -43,13 +43,13 @@ export default function Profile() {
   const account = useActiveAccount();
 
   const cardsContract = getContract({
-    address: CARD_CONTRACT_ADDRESS,
+    address: PACK_CONTRACT_ADDRESS,
     chain,
     client,
   });
 
   const packsContract = getContract({
-    address: PACK_CONTRACT_ADDRESS,
+    address: CARD_CONTRACT_ADDRESS,
     chain,
     client,
   });
@@ -87,7 +87,7 @@ export default function Profile() {
       "ipfs://",
       "https://d9e571038d3183668c5882bbc75bc9ae.ipfscdn.io/ipfs/"
     );
-  };
+  };  
 
   const openNewPack = async (packId: number) => {
   try {
