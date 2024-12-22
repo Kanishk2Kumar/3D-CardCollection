@@ -89,11 +89,10 @@ const Features: FC = () => (
     <div className="container mx-auto px-3 md:px-10">
       <div className="px-5 py-32">
         <p className="font-circular-web text-lg text-blue-50">
-          Into the Metagame Layer
+          Enter the Hyperdrive Arena
         </p>
         <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-          Immerse yourself in a showcase of high-performance cars with elegant
-          and dynamic designs.
+        Gear up for an exhilarating experience as you race through a world filled with cutting-edge, high-performance vehicles and breathtaking, dynamic landscapes. The ultimate challenge awaits—can you dominate the track and rise above the rest?
         </p>
       </div>
 

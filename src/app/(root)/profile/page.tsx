@@ -25,7 +25,7 @@ type NFT = {
     attributes: {
       trait_type: string;
       value: string | number;
-    }[];
+    }[]; 
   };
   quantityOwned: string;
   supply: string;
@@ -35,6 +35,7 @@ export default function Profile() {
   const [nfts, setNfts] = useState<any[]>([]);
   const [packs, setPacks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedNft, setSelectedNft] = useState<NFT | null>(null);
   const [activeTab, setActiveTab] = useState("NFTs");
 
   const walletInfo = useActiveWallet();
@@ -43,13 +44,13 @@ export default function Profile() {
   const account = useActiveAccount();
 
   const cardsContract = getContract({
-    address: PACK_CONTRACT_ADDRESS,
+    address: CARD_CONTRACT_ADDRESS,
     chain,
     client,
   });
 
   const packsContract = getContract({
-    address: CARD_CONTRACT_ADDRESS,
+    address: PACK_CONTRACT_ADDRESS,
     chain,
     client,
   });
@@ -83,14 +84,18 @@ export default function Profile() {
   }, [walletAddress]);
 
   const formatIpfsUrl = (url: string) => {
-    return url.replace(
-      "ipfs://",
-      "https://d9e571038d3183668c5882bbc75bc9ae.ipfscdn.io/ipfs/"
-    );
-  };  
+    return url.replace("ipfs://", "https://d9e571038d3183668c5882bbc75bc9ae.ipfscdn.io/ipfs/");
+  };
+
+  const handleCardClick = (nft: NFT) => {
+    setSelectedNft(nft);
+  };
+
+  const handleClose = () => {
+    setSelectedNft(null);
+  };
 
   const openNewPack = async (packId: number) => {
-  try {
     const transaction = await openPack({
       contract: packsContract,
       packId: BigInt(packId),
@@ -107,45 +112,27 @@ export default function Profile() {
       transaction,
       account: account,
     });
-
-    alert("Pack opened successfully!");
-  } catch (error) {
-    console.error("Error opening pack:", error);
-    alert(`Failed to open pack.Error: ${error}`);
-  }
-};
-
-
-  const renderMedia = (url: string, alt: string) => {
-    return (
-      <Image
-        src={formatIpfsUrl(url)}
-        alt={alt}
-        width={288}
-        height={320}
-        className="object-cover rounded-lg shadow-lg"
-      />
-    );
   };
+
+  // Check if wallet is connected, if not, show the connect wallet message
+  if (walletAddress === "0x") {
+    return (
+      <div className="min-h-screen flex justify-center items-center text-white bg-black">
+        <h1 className="text-4xl font-bold text-center">
+          Please connect your wallet to view the profile and NFTs.
+        </h1>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-16 pb-40 pt-20">
       <div className="flex flex-col items-center">
         <h1 className="special-font hero-heading text-red-800 mb-6 !text-6xl">
-          NFT Marketplace
+          Profile
         </h1>
 
         <div className="flex space-x-4 mb-8">
-          <button
-            onClick={() => setActiveTab("Packs")}
-            className={`px-4 py-2 rounded-lg font-medieval ${
-              activeTab === "Packs"
-                ? "bg-red-500 text-white"
-                : "bg-gray-200 text-gray-800"
-            }`}
-          >
-            NFTs
-          </button>
           <button
             onClick={() => setActiveTab("NFTs")}
             className={`px-4 py-2 rounded-lg font-medieval ${
@@ -154,73 +141,63 @@ export default function Profile() {
                 : "bg-gray-200 text-gray-800"
             }`}
           >
+            NFTs
+          </button>
+          <button
+            onClick={() => setActiveTab("Packs")}
+            className={`px-4 py-2 rounded-lg font-medieval ${
+              activeTab === "Packs"
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
             Packs
           </button>
         </div>
-
-        {activeTab === "NFTs" &&
-          (isLoading ? (
-            <div className="text-center">
+      </div>
+      {activeTab === "NFTs" &&
+        (isLoading ? (
+          <div>
+            <motion.div
+              className="flex justify-center items-center h-64"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.5,
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
+            >
               <motion.div
-                className="flex justify-center items-center h-64"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <motion.div
-                  className="border-t-4 border-red-500 rounded-full w-16 h-16"
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 1,
-                    ease: "linear",
-                  }}
-                />
-              </motion.div>
-              <h1 className="text-3xl font-bold text-center font-medieval">
-                Loading Lists...
-              </h1>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
-              {nfts.map((nft, index) => (
-                <motion.div
-                  key={index}
-                  className="bg-transparent rounded-lg shadow-md overflow-hidden flex flex-col w-72 h-[400px] cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  {" "}
-                  <div className="relative h-80 w-full">
-                    {" "}
-                    {renderMedia(nft.metadata.image, nft.metadata.name)}{" "}
-                  </div>{" "}
-                  <h2 className="text-xl mt-2">{nft.metadata.name}</h2>{" "}
-                  <button
-                    onClick={() => openNewPack(nft.metadata.id)}
-                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md"
-                  >
-                    {" "}
-                    Open Pack{" "}
-                  </button>{" "}
-                </motion.div>
-              ))}
-            </div>
-          ))}
-
-        {activeTab === "Packs" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
-            {packs.map((pack, index) => (
+                className="border-t-4 border-red-500 rounded-full w-16 h-16"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              />
+            </motion.div>
+            <h1 className="text-3xl font-bold mb-8 text-center font-medieval">
+              Loading Lists ...
+            </h1>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+            {nfts.map((nft, index) => (
               <motion.div
                 key={index}
-                className="bg-black border border-red-600 rounded-lg shadow-lg flex flex-col p-4"
+                className="bg-transparent rounded-lg shadow-md overflow-hidden flex flex-col w-72 h-[300px] cursor-pointer border-red-700 border-2"
+                onClick={() => handleCardClick(nft)}
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <div className="relative mb-10">
-                  {renderMedia(pack.metadata.image, pack.metadata.name)}
+                <div className="relative h-80 w-full">
+                  <Image
+                    src={formatIpfsUrl(nft.metadata.image)}
+                    alt={nft.metadata.name}
+                    width={288}
+                    height={320}
+                    className="object-cover rounded-lg shadow-lg"
+                  />
                 </div>
-                <div className="max-w-64">
+                <div className="mt-2 min-w-60">
                   <p
                     className="text-md mb-6 overflow-hidden text-ellipsis"
                     style={{
@@ -229,15 +206,57 @@ export default function Profile() {
                       WebkitBoxOrient: "vertical",
                     }}
                   >
-                    {pack.metadata.description}
+                    {nft.metadata.description}
                   </p>
                 </div>
-                <h2 className="text-xl mt-2">{pack.metadata.name}</h2>
               </motion.div>
             ))}
           </div>
-        )}
-      </div>
+        ))}
+
+      {activeTab === "Packs" && (
+        <div className="w-full flex justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl px-4">
+            {packs.map((pack, index) => (
+              <motion.div
+                key={index}
+                className="bg-black text-white font-semibold rounded-lg shadow-md overflow-hidden flex flex-col h-full w-full"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <div className="relative h-80 w-full">
+                  <Image
+                    src={formatIpfsUrl(pack.metadata.image)}
+                    alt={pack.metadata.name}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </div>
+                <div className="p-4 flex-grow flex flex-col justify-between">
+                  <h2 className="text-xl font-medieval mb-2 text-black">
+                    {pack.metadata.name}
+                  </h2>
+                  <p className="text-gray-600 text-sm mb-2 h-10 overflow-y-auto font-medieval">
+                    {pack.metadata.description}
+                  </p>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-gray-700 font-medieval">
+                      Amount Owned: {pack.quantityOwned.toString()} /{" "}
+                      {pack.supply.toString()}
+                    </span>
+                  </div>
+                  <button
+                    onClick={openNewPack.bind(null, pack.id)}
+                    className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-200 font-medieval"
+                  >
+                    Open Pack
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

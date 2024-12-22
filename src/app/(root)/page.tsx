@@ -9,7 +9,6 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
-      <div className="min-h-screen bg-black"></div>
       <Footer />
     </div>
   );
