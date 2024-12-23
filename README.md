@@ -1,17 +1,11 @@
-
-![tw-banner](https://github.com/thirdweb-example/next-starter/assets/57885104/20c8ce3b-4e55-4f10-ae03-2fe4743a5ee8)
-
-# thirdweb-next-starter
-
-Starter template to build an onchain react native app with [thirdweb](https://thirdweb.com/) and [next](https://nextjs.org/).
+# Hyper Drive
 
 ## Installation
 
-Install the template using [thirdweb create](https://portal.thirdweb.com/cli/create)
-
-```bash
-  npx thirdweb create app --next
-```
+`git clone https://github.com/Kanishk2Kumar/3D-CardCollection`
+`npm i`
+`Set Up ENV`
+`npm run dev`
 
 ## Environment Variables
 
