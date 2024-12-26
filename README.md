@@ -1,6 +1,5 @@
-# HyberDrive: A 3D Car NFT Trading Card Game
+# HyberDrive: A 3D Car NFT Trading Card Game 🚀
 
-## 🚀 Overview
 The 3D Car NFT Trading Card Game is an innovative blockchain-powered game where players dive into a thrilling world of car NFTs. From exploring diverse terrains to collecting unique car NFTs, players can battle AI opponents or engage in peer-to-peer duels while upgrading their car stats and trading in a dedicated NFT marketplace.
 
 ![Screenshot 2024-12-22 083351](https://github.com/user-attachments/assets/c72471e3-e92e-46d5-9867-712b9e0d5ec3)
