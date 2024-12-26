@@ -28,11 +28,11 @@ The 3D Car NFT Trading Card Game is an innovative blockchain-powered game where 
 ## 🛠️ Installation
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-repo/3d-car-nft-game.git
+   git clone https://github.com/Kanishk2Kumar/3D-CardCollection.git
    ```
 2. Navigate to the project directory:  
    ```bash
-   cd 3d-car-nft-game
+   cd 3D-CardCollection
    ```
 3. Install dependencies:  
    ```bash
@@ -40,7 +40,7 @@ The 3D Car NFT Trading Card Game is an innovative blockchain-powered game where 
    ```
 4. Start the development server:  
    ```bash
-   npm start
+   npm run dev
    ```
 
 ## 📝 License
